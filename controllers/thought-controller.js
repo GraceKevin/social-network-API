@@ -3,23 +3,23 @@ const { Thought, User } = require('../models');
 const thoughtController = {
 
 // Create new thought
-  createThought({ params, body }, res) {
-    console.log(params);
+  createThought({ body }, res) {
+
     Thought.create(body)
-      .then(({ _id }) => {
+      .then(({ dbThoughtData }) => {
         return User.findOneAndUpdate(
-          { _id: params.userId },
-          { $push: { thoughts: _id } },
+          { _id: body.userId },
+          { $push: { thoughts: dbThoughtData._id } },
           { new: true }
         );
       })
       .then(dbUserData => {
         console.log(dbUserData);
         if (!dbUserData) {
-          res.status(404).json({ message: 'No thoughts found with this id!' });
+          res.status(404).json({ message: 'No thoughts found matching this id.' });
           return;
         }
-        res.json(dbUserData);
+        res.json({ message: 'Thought was created succesfully.'});
       })
       .catch(err => res.json(err));
   },
@@ -34,7 +34,8 @@ const thoughtController = {
       .select('-__v')
       .then(dbThoughtData => res.json(dbThoughtData))
       .catch(err => {
-        console.log(err);
+        
+        // console.log(err);
         res.sendStatus(400);
       });
   },
@@ -59,7 +60,7 @@ const thoughtController = {
     Thought.findOneAndUpdate({ _id: params.id }, body, { new: true, runValidators: true })
       .then(dbThoughtData => {
         if (!dbThoughtData) {
-          res.status(404).json({ message: 'No thought found with this id!' });
+          res.status(404).json({ message: 'No thought found matching this id.' });
           return;
         }
         res.json(dbThoughtData);
@@ -70,7 +71,12 @@ const thoughtController = {
   // Delete thought by id
   deleteThought({ params }, res) {
     Thought.findOneAndDelete({ _id: params.id })
-      .then(dbThoughtData => res.json(dbThoughtData))
+      .then(deletedThought => {
+          if (!deletedThought) {
+              return res.status(404).json({message: 'No thought found matching this id.'});
+          } 
+          res.json(deletedThought);
+      })
       .catch(err => res.json(err));
   },
 
@@ -81,12 +87,12 @@ const thoughtController = {
       { $push: { reactions: body } },
       { new: true, runValidators: true }
     )
-      .then(dbThoughtData => {
-        if (!dbThoughtData) {
-          res.status(404).json({ message: 'No thought found with this id!' });
+      .then(dbData => {
+        if (!dbData) {
+          res.status(404).json({ message: 'No thought found matching this id.' });
           return;
         }
-        res.json(dbThoughtData);
+        res.json(dbData);
       })
       .catch(err => res.json(err));
   },

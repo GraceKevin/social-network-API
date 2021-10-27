@@ -20,6 +20,7 @@
   "dependencies": {
     "dayjs": "^1.10.7",
     "express": "^4.17.1",
+    "mogodb": "0.0.1-security",
     "mongoose": "^6.0.12",
     "nodemon": "^2.0.14"
   },
